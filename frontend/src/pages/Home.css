@@ -1,7 +1,9 @@
 .home-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 2rem;
+  flex: 1;
 }
 
 .hero-section {
@@ -12,121 +14,111 @@
 .hero-section h1 {
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
-  color: #ffffff;
 }
 
 .hero-section p {
-  color: #a0a0a0;
+  color: var(--text-muted);
   font-size: 1.1rem;
 }
 
+/* Centers and sizes the input area */
 .download-form {
   display: flex;
   gap: 1rem;
+  width: 100%;
+  max-width: 600px;
   margin-bottom: 3rem;
 }
 
 .download-form input {
   flex: 1;
   padding: 1rem 1.5rem;
-  font-size: 1rem;
-  border: 1px solid #333;
   border-radius: 8px;
-  background-color: #1a1a1a;
-  color: #ffffff;
+  border: 1px solid #333;
+  background-color: var(--surface-color);
+  color: var(--text-main);
+  font-size: 1rem;
   outline: none;
   transition: border-color 0.2s;
 }
 
 .download-form input:focus {
-  border-color: #646cff;
+  border-color: var(--primary-color);
 }
 
 .download-form button {
   padding: 0 2rem;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--primary-color);
+  color: white;
   font-size: 1rem;
   font-weight: bold;
-  border: none;
-  border-radius: 8px;
-  background-color: #646cff;
-  color: white;
   cursor: pointer;
-  transition: background-color 0.2s;
-  white-space: nowrap;
+  transition: background-color 0.2s, transform 0.1s;
 }
 
 .download-form button:hover:not(:disabled) {
-  background-color: #535bf2;
+  background-color: var(--primary-hover);
 }
 
-.download-form button:disabled {
-  background-color: #333;
-  color: #888;
-  cursor: not-allowed;
+.download-form button:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .result-card {
-  background-color: #1a1a1a;
-  border: 1px solid #333;
+  background-color: var(--surface-color);
   border-radius: 12px;
-  overflow: hidden;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 600px;
   display: flex;
-  flex-direction: column;
-  animation: fadeIn 0.4s ease-out;
+  gap: 1.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
 }
 
 .thumbnail {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 16/9;
+  width: 160px;
+  height: 90px;
   object-fit: cover;
-  border-bottom: 1px solid #333;
+  border-radius: 8px;
 }
 
 .result-info {
-  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .result-info h3 {
   margin: 0 0 0.5rem 0;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
 }
 
 .result-info p {
-  color: #a0a0a0;
-  margin: 0 0 1.5rem 0;
+  margin: 0 0 1rem 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
 
 .download-actions {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
+  margin-top: auto;
 }
 
 .btn-primary, .btn-secondary {
-  padding: 0.75rem 1.5rem;
-  border: none;
+  padding: 0.5rem 1rem;
   border-radius: 6px;
-  font-weight: bold;
+  border: none;
+  font-weight: 600;
   cursor: pointer;
   flex: 1;
-  transition: opacity 0.2s;
+  transition: background-color 0.2s;
 }
 
-.btn-primary {
-  background-color: #10b981;
-  color: white;
-}
+.btn-primary { background-color: var(--primary-color); color: white; }
+.btn-primary:hover { background-color: var(--primary-hover); }
 
-.btn-secondary {
-  background-color: #3b82f6;
-  color: white;
-}
-
-.btn-primary:hover, .btn-secondary:hover {
-  opacity: 0.9;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.btn-secondary { background-color: transparent; color: var(--text-main); border: 1px solid #555; }
+.btn-secondary:hover { background-color: #333; }
