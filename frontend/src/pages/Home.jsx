@@ -1,14 +1,36 @@
 import { useState } from 'react';
-import { fetchVideoDetails } from '../services/api';
+import { fetchVideoDetails, fetchPlaylistUrls } from '../services/api';
 import './Home.css';
 
 export default function Home() {
   const [urlsInput, setUrlsInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isExtractingPlaylist, setIsExtractingPlaylist] = useState(false);
   const [results, setResults] = useState([]);
+
+  const handlePlaylistExtract = async () => {
+    const playlistUrl = urlsInput.split('\n')[0].trim();
+    if (!playlistUrl) {
+      alert("Please paste a valid playlist URL into the box first.");
+      return;
+    }
+
+    setIsExtractingPlaylist(true);
+    try {
+      const data = await fetchPlaylistUrls(playlistUrl);
+      setUrlsInput(data.urls.join('\n'));
+      alert(`Successfully extracted ${data.urls.length} videos from: ${data.title}`);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to extract playlist. Make sure it is a valid, public playlist URL.");
+    } finally {
+      setIsExtractingPlaylist(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     const urlArray = urlsInput.split('\n').map(u => u.trim()).filter(u => u);
     if (urlArray.length === 0) return;
     
@@ -18,26 +40,21 @@ export default function Home() {
       const fetchPromises = urlArray.map(async (url) => {
         try {
           const data = await fetchVideoDetails(url);
-
           const defaultFormat = data.formats && data.formats.length > 0
             ? JSON.stringify({ id: data.formats[0].id, type: data.formats[0].type })
             : '';
             
           return { ...data, originalUrl: url, selectedFormat: defaultFormat, hasError: false };
         } catch (error) {
-          console.error(`Failed to fetch ${url}`, error);
           return { originalUrl: url, hasError: true };
         }
       });
 
       const newResults = await Promise.all(fetchPromises);
-      
       const successfulResults = newResults.filter(r => !r.hasError);
       setResults(prev => [...prev, ...successfulResults]);
-
       setUrlsInput('');
     } catch (error) {
-      console.error(error);
       alert("A critical error occurred while fetching the videos.");
     } finally {
       setIsProcessing(false);
@@ -54,7 +71,7 @@ export default function Home() {
     if (!video.selectedFormat) return;
     const formatData = JSON.parse(video.selectedFormat);
     const downloadUrl = `http://localhost:5000/api/video/download?url=${encodeURIComponent(video.originalUrl)}&type=${formatData.type}&formatId=${formatData.id}`;
-
+    
     const a = document.createElement('a');
     a.href = downloadUrl;
     document.body.appendChild(a);
@@ -74,20 +91,38 @@ export default function Home() {
     <div className="home-container">
       <div className="hero-section">
         <h1>Batch Video Downloader</h1>
-        <p>Paste multiple URLs below (one per line) to fetch them all at once.</p>
+        <p>Paste multiple URLs below, or paste a Playlist URL and extract it.</p>
       </div>
       
       <form className="download-form" onSubmit={handleSubmit}>
         <textarea
-          placeholder="https://youtube.com/...&#10;https://instagram.com/..."
+          placeholder="https://youtube.com/playlist?list=...&#10;or paste multiple individual links here..."
           value={urlsInput}
           onChange={(e) => setUrlsInput(e.target.value)}
-          rows="4"
+          rows="5"
           required
         />
-        <button type="submit" disabled={isProcessing}>
-          {isProcessing ? 'Processing Batch...' : 'Fetch Videos'}
-        </button>
+        
+        {}
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button 
+            type="submit" 
+            style={{ flex: 2 }} 
+            disabled={isProcessing || isExtractingPlaylist}
+          >
+            {isProcessing ? 'Processing Batch...' : 'Fetch Videos'}
+          </button>
+          
+          <button 
+            type="button" 
+            className="btn-secondary" 
+            style={{ flex: 1, padding: '1rem', border: '1px solid #4f46e5', color: '#818cf8' }} 
+            onClick={handlePlaylistExtract} 
+            disabled={isProcessing || isExtractingPlaylist || !urlsInput}
+          >
+            {isExtractingPlaylist ? 'Extracting...' : 'Extract Playlist'}
+          </button>
+        </div>
       </form>
 
       {results.length > 0 && (

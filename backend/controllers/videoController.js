@@ -96,3 +96,30 @@ exports.downloadMedia = (req, res) => {
     if (!res.headersSent) res.status(500).send("Download failed");
   });
 };
+
+exports.getPlaylistUrls = async (req, res) => {
+  const { url } = req.body;
+  if (!url) return res.status(400).json({ error: "URL is required" });
+
+  try {
+    const playlistInfo = await youtubedl(url, {
+      dumpSingleJson: true,
+      flatPlaylist: true,
+      noCheckCertificates: true,
+      noWarnings: true,
+    });
+
+    if (!playlistInfo.entries || playlistInfo.entries.length === 0) {
+      return res.status(400).json({ error: "No videos found in this playlist." });
+    }
+
+    const urls = playlistInfo.entries.map(entry => {
+      return entry.url || `https://www.youtube.com/watch?v=${entry.id}`;
+    });
+
+    res.json({ title: playlistInfo.title, urls });
+  } catch (error) {
+    console.error("Playlist Extraction Error:", error.message);
+    res.status(500).json({ error: "Failed to extract playlist details" });
+  }
+};
