@@ -1,5 +1,11 @@
 const youtubedl = require('youtube-dl-exec');
 
+const formatBytes = (bytes) => {
+  if (!bytes || bytes === 0) return 'Unknown size';
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + ['B', 'KB', 'MB', 'GB'][i];
+};
+
 exports.getVideoDetails = async (req, res) => {
   const { url } = req.body;
   if (!url) return res.status(400).json({ error: "URL is required" });
@@ -9,7 +15,6 @@ exports.getVideoDetails = async (req, res) => {
       dumpSingleJson: true,
       noCheckCertificates: true,
       noWarnings: true,
-      preferFreeFormats: true
     });
 
     const formatDuration = (seconds) => {
@@ -17,10 +22,44 @@ exports.getVideoDetails = async (req, res) => {
       return new Date(seconds * 1000).toISOString().slice(11, 19);
     };
 
+    const availableFormats = [];
+    if (videoInfo.formats) {
+      const videoFormats = videoInfo.formats.filter(f => 
+        f.vcodec !== 'none' && f.acodec !== 'none' && (f.filesize || f.filesize_approx)
+      );
+
+      const seenHeights = new Set();
+      videoFormats.sort((a, b) => (b.height || 0) - (a.height || 0)).forEach(f => {
+        if (f.height && !seenHeights.has(f.height)) {
+          seenHeights.add(f.height);
+          availableFormats.push({
+            id: f.format_id,
+            label: `${f.height}p Video`,
+            size: formatBytes(f.filesize || f.filesize_approx),
+            type: 'video'
+          });
+        }
+      });
+
+      const audioFormats = videoInfo.formats.filter(f => 
+        f.vcodec === 'none' && f.acodec !== 'none' && (f.filesize || f.filesize_approx)
+      );
+      if (audioFormats.length > 0) {
+        const bestAudio = audioFormats.sort((a, b) => (b.filesize || 0) - (a.filesize || 0))[0];
+        availableFormats.push({
+          id: bestAudio.format_id,
+          label: `Audio Only (MP3)`,
+          size: formatBytes(bestAudio.filesize || bestAudio.filesize_approx),
+          type: 'audio'
+        });
+      }
+    }
+
     res.json({
       title: videoInfo.title,
       thumbnail: videoInfo.thumbnail,
-      duration: formatDuration(videoInfo.duration)
+      duration: formatDuration(videoInfo.duration),
+      formats: availableFormats
     });
   } catch (error) {
     console.error("Extraction Error:", error.message);
@@ -29,22 +68,16 @@ exports.getVideoDetails = async (req, res) => {
 };
 
 exports.downloadMedia = (req, res) => {
-  const { url, type } = req.query;
+  const { url, type, formatId } = req.query;
   if (!url) return res.status(400).send("URL is required");
 
-  const isAudio = type === 'mp3';
+  const isAudio = type === 'audio';
   const options = {
     output: '-',
     noCheckCertificates: true,
     noWarnings: true,
-    preferFreeFormats: true,
-    format: isAudio ? 'bestaudio/best' : 'best'
+    format: formatId || (isAudio ? 'bestaudio/best' : 'best')
   };
-
-  if (isAudio) {
-    options.extractAudio = true;
-    options.audioFormat = 'mp3';
-  }
 
   res.setHeader('Content-Disposition', `attachment; filename="download.${isAudio ? 'mp3' : 'mp4'}"`);
   res.setHeader('Content-Type', isAudio ? 'audio/mpeg' : 'video/mp4');

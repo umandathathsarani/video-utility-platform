@@ -21,33 +21,36 @@
   font-size: 1.1rem;
 }
 
-/* Centers and sizes the input area */
 .download-form {
   display: flex;
+  flex-direction: column;
   gap: 1rem;
   width: 100%;
   max-width: 600px;
   margin-bottom: 3rem;
 }
 
-.download-form input {
-  flex: 1;
+.download-form textarea {
+  width: 100%;
   padding: 1rem 1.5rem;
   border-radius: 8px;
   border: 1px solid #333;
   background-color: var(--surface-color);
   color: var(--text-main);
   font-size: 1rem;
+  font-family: inherit;
   outline: none;
+  resize: vertical;
   transition: border-color 0.2s;
+  box-sizing: border-box;
 }
 
-.download-form input:focus {
+.download-form textarea:focus {
   border-color: var(--primary-color);
 }
 
 .download-form button {
-  padding: 0 2rem;
+  padding: 1rem 2rem;
   border-radius: 8px;
   border: none;
   background-color: var(--primary-color);
@@ -66,15 +69,48 @@
   transform: scale(0.98);
 }
 
+.results-container {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.batch-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #333;
+}
+
+.batch-actions h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.batch-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.cards-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 .result-card {
   background-color: var(--surface-color);
   border-radius: 12px;
   padding: 1.5rem;
   width: 100%;
-  max-width: 600px;
+  max-width: 100%;
   display: flex;
   gap: 1.5rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
 }
 
 .thumbnail {
@@ -88,11 +124,15 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .result-info h3 {
   margin: 0 0 0.5rem 0;
   font-size: 1.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .result-info p {
@@ -101,10 +141,32 @@
   font-size: 0.9rem;
 }
 
-.download-actions {
+.format-selection {
   display: flex;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 1rem;
   margin-top: auto;
+}
+
+.quality-select {
+  padding: 0.75rem;
+  border-radius: 6px;
+  background-color: #2a2a2a;
+  color: var(--text-main);
+  border: 1px solid #444;
+  font-size: 1rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.quality-select:focus {
+  border-color: var(--primary-color);
+}
+
+.quality-select option {
+  background-color: #2a2a2a;
+  color: var(--text-main);
 }
 
 .btn-primary, .btn-secondary {
@@ -117,8 +179,21 @@
   transition: background-color 0.2s;
 }
 
-.btn-primary { background-color: var(--primary-color); color: white; }
-.btn-primary:hover { background-color: var(--primary-hover); }
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
 
-.btn-secondary { background-color: transparent; color: var(--text-main); border: 1px solid #555; }
-.btn-secondary:hover { background-color: #333; }
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--text-main);
+  border: 1px solid #555;
+}
+
+.btn-secondary:hover {
+  background-color: #333;
+}
