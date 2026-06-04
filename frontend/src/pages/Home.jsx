@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { fetchVideoDetails } from '../services/api';
 import './Home.css';
 
 export default function Home() {
@@ -6,19 +7,19 @@ export default function Home() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!url) return;
     setIsProcessing(true);
     
-    setTimeout(() => {
-      setResult({
-        title: "Sample Video Title - Backend Integration Pending",
-        thumbnail: "https://via.placeholder.com/800x450/1a1a1a/ffffff?text=Video+Thumbnail",
-        duration: "10:24"
-      });
+    try {
+      const data = await fetchVideoDetails(url);
+      setResult(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
       setIsProcessing(false);
-    }, 1500);
+    }
   };
 
   return (
