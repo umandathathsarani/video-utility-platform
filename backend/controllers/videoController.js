@@ -24,31 +24,32 @@ exports.getVideoDetails = async (req, res) => {
 
     const availableFormats = [];
     if (videoInfo.formats) {
+      const audioFormats = videoInfo.formats.filter(f => f.vcodec === 'none' && f.acodec !== 'none');
+      const bestAudio = audioFormats.length > 0 
+        ? audioFormats.sort((a, b) => (b.filesize || 0) - (a.filesize || 0))[0] 
+        : null;
 
-      const standardVideoFormats = videoInfo.formats.filter(f => 
-        f.vcodec !== 'none' && f.acodec !== 'none' && f.height
-      );
+      const videoFormats = videoInfo.formats.filter(f => f.vcodec !== 'none' && f.height);
 
       const seenHeights = new Set();
-      standardVideoFormats.sort((a, b) => b.height - a.height).forEach(f => {
+      videoFormats.sort((a, b) => b.height - a.height).forEach(f => {
         if (!seenHeights.has(f.height)) {
           seenHeights.add(f.height);
           
+          const hasAudio = f.acodec !== 'none';
+
+          const downloadId = hasAudio ? f.format_id : (bestAudio ? `${f.format_id}+${bestAudio.format_id}` : f.format_id);
+
           availableFormats.push({
-            id: f.format_id,
-            label: `${f.height}p Video`,
+            id: downloadId,
+            label: `${f.height}p Video${hasAudio ? '' : ' (HQ Merge)'}`,
             size: formatBytes(f.filesize || f.filesize_approx || 0),
             type: 'video'
           });
         }
       });
 
-      const audioFormats = videoInfo.formats.filter(f => 
-        f.vcodec === 'none' && f.acodec !== 'none'
-      );
-
-      if (audioFormats.length > 0) {
-        const bestAudio = audioFormats.sort((a, b) => (b.filesize || 0) - (a.filesize || 0))[0];
+      if (bestAudio) {
         availableFormats.push({
           id: bestAudio.format_id,
           label: `Audio Only (MP3)`,
@@ -75,11 +76,11 @@ exports.downloadMedia = (req, res) => {
   if (!url) return res.status(400).send("URL is required");
 
   const isAudio = type === 'audio';
+  
   const options = {
     output: '-',
     noCheckCertificates: true,
     noWarnings: true,
-    // Uses the exact format ID chosen in the dropdown
     format: formatId || (isAudio ? 'bestaudio/best' : 'best')
   };
 
