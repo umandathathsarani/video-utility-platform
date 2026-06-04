@@ -6,6 +6,25 @@ const formatBytes = (bytes) => {
   return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + ['B', 'KB', 'MB', 'GB'][i];
 };
 
+exports.getBasicInfo = async (req, res) => {
+  const { url } = req.body;
+  try {
+    const info = await youtubedl(url, {
+      dumpSingleJson: true,
+      skipDownload: true,
+      noCheckCertificates: true,
+      noWarnings: true,
+    });
+    res.json({
+      title: info.title,
+      thumbnail: info.thumbnail,
+      duration: new Date(info.duration * 1000).toISOString().slice(11, 19),
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Could not fetch video info" });
+  }
+};
+
 exports.getVideoDetails = async (req, res) => {
   const { url } = req.body;
   if (!url) return res.status(400).json({ error: "URL is required" });
@@ -25,9 +44,7 @@ exports.getVideoDetails = async (req, res) => {
     const availableFormats = [];
     if (videoInfo.formats) {
       const audioFormats = videoInfo.formats.filter(f => f.vcodec === 'none' && f.acodec !== 'none');
-      const bestAudio = audioFormats.length > 0 
-        ? audioFormats.sort((a, b) => (b.filesize || 0) - (a.filesize || 0))[0] 
-        : null;
+      const bestAudio = audioFormats.length > 0 ? audioFormats.sort((a, b) => (b.filesize || 0) - (a.filesize || 0))[0] : null;
 
       const videoFormats = videoInfo.formats.filter(f => f.vcodec !== 'none' && f.height);
 
@@ -35,9 +52,7 @@ exports.getVideoDetails = async (req, res) => {
       videoFormats.sort((a, b) => b.height - a.height).forEach(f => {
         if (!seenHeights.has(f.height)) {
           seenHeights.add(f.height);
-          
           const hasAudio = f.acodec !== 'none';
-
           const downloadId = hasAudio ? f.format_id : (bestAudio ? `${f.format_id}+${bestAudio.format_id}` : f.format_id);
 
           availableFormats.push({
@@ -66,7 +81,6 @@ exports.getVideoDetails = async (req, res) => {
       formats: availableFormats
     });
   } catch (error) {
-    console.error("Extraction Error:", error.message);
     res.status(500).json({ error: "Failed to extract video details" });
   }
 };
@@ -81,11 +95,12 @@ exports.downloadMedia = (req, res) => {
     output: '-',
     noCheckCertificates: true,
     noWarnings: true,
-    format: formatId || (isAudio ? 'bestaudio/best' : 'best')
+    format: formatId,
+    mergeOutputFormat: 'mp4'
   };
 
-  res.setHeader('Content-Disposition', `attachment; filename="download.${isAudio ? 'mp3' : 'mp4'}"`);
-  res.setHeader('Content-Type', isAudio ? 'audio/mpeg' : 'video/mp4');
+  res.setHeader('Content-Disposition', `attachment; filename="video.mp4"`);
+  res.setHeader('Content-Type', 'video/mp4');
 
   const subprocess = youtubedl.exec(url, options);
   
@@ -121,24 +136,5 @@ exports.getPlaylistUrls = async (req, res) => {
   } catch (error) {
     console.error("Playlist Extraction Error:", error.message);
     res.status(500).json({ error: "Failed to extract playlist details" });
-  }
-};
-
-exports.getBasicInfo = async (req, res) => {
-  const { url } = req.body;
-  try {
-    const info = await youtubedl(url, {
-      dumpSingleJson: true,
-      skipDownload: true,
-      noCheckCertificates: true,
-      noWarnings: true,
-    });
-    res.json({
-      title: info.title,
-      thumbnail: info.thumbnail,
-      duration: new Date(info.duration * 1000).toISOString().slice(11, 19),
-    });
-  } catch (error) {
-    res.status(500).json({ error: "Could not fetch video info" });
   }
 };

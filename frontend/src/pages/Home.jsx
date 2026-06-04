@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { fetchVideoDetails, fetchPlaylistUrls } from '../services/api';
 import './Home.css';
+import Toast from '../components/Toast';
 
 export default function Home() {
+  const [toast, setToast] = useState(null);
   const [urlsInput, setUrlsInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isExtractingPlaylist, setIsExtractingPlaylist] = useState(false);
@@ -16,13 +18,13 @@ export default function Home() {
     }
 
     setIsExtractingPlaylist(true);
-    try {
-      const data = await fetchPlaylistUrls(playlistUrl);
-      setUrlsInput(data.urls.join('\n'));
-    } catch (error) {
-      console.error(error);
-      alert("Failed to extract playlist.");
-    } finally {
+  try {
+    const data = await fetchPlaylistUrls(playlistUrl);
+    setUrlsInput(data.urls.join('\n'));
+    setToast(`Successfully extracted ${data.urls.length} videos`);
+  } catch (error) {
+    setToast("Failed to extract playlist. Check if it's public.");
+  } finally {
       setIsExtractingPlaylist(false);
     }
   };
@@ -96,6 +98,7 @@ export default function Home() {
       <div className="hero-section">
         <h1>Batch Video Downloader</h1>
         <p>Paste multiple URLs below, or paste a Playlist URL and extract it.</p>
+        {toast && <Toast message={toast} onClose={() => setToast(null)} />}
       </div>
       
       <form className="download-form" onSubmit={handleSubmit}>
