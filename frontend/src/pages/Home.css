@@ -1,0 +1,132 @@
+.home-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+.hero-section {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.hero-section h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  color: #ffffff;
+}
+
+.hero-section p {
+  color: #a0a0a0;
+  font-size: 1.1rem;
+}
+
+.download-form {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.download-form input {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  border: 1px solid #333;
+  border-radius: 8px;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.download-form input:focus {
+  border-color: #646cff;
+}
+
+.download-form button {
+  padding: 0 2rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  background-color: #646cff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.download-form button:hover:not(:disabled) {
+  background-color: #535bf2;
+}
+
+.download-form button:disabled {
+  background-color: #333;
+  color: #888;
+  cursor: not-allowed;
+}
+
+.result-card {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.thumbnail {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  border-bottom: 1px solid #333;
+}
+
+.result-info {
+  padding: 1.5rem;
+}
+
+.result-info h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+}
+
+.result-info p {
+  color: #a0a0a0;
+  margin: 0 0 1.5rem 0;
+}
+
+.download-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-primary, .btn-secondary {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  flex: 1;
+  transition: opacity 0.2s;
+}
+
+.btn-primary {
+  background-color: #10b981;
+  color: white;
+}
+
+.btn-secondary {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.btn-primary:hover, .btn-secondary:hover {
+  opacity: 0.9;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
