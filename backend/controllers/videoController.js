@@ -1,7 +1,7 @@
 const youtubedl = require('youtube-dl-exec');
 
 const formatBytes = (bytes) => {
-  if (!bytes || bytes === 0) return 'Unknown size';
+  if (!bytes || bytes === 0) return 'Size Unknown';
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
   return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + ['B', 'KB', 'MB', 'GB'][i];
 };
@@ -24,32 +24,35 @@ exports.getVideoDetails = async (req, res) => {
 
     const availableFormats = [];
     if (videoInfo.formats) {
-      const videoFormats = videoInfo.formats.filter(f => 
-        f.vcodec !== 'none' && f.acodec !== 'none' && (f.filesize || f.filesize_approx)
+
+      const standardVideoFormats = videoInfo.formats.filter(f => 
+        f.vcodec !== 'none' && f.acodec !== 'none' && f.height
       );
 
       const seenHeights = new Set();
-      videoFormats.sort((a, b) => (b.height || 0) - (a.height || 0)).forEach(f => {
-        if (f.height && !seenHeights.has(f.height)) {
+      standardVideoFormats.sort((a, b) => b.height - a.height).forEach(f => {
+        if (!seenHeights.has(f.height)) {
           seenHeights.add(f.height);
+          
           availableFormats.push({
             id: f.format_id,
             label: `${f.height}p Video`,
-            size: formatBytes(f.filesize || f.filesize_approx),
+            size: formatBytes(f.filesize || f.filesize_approx || 0),
             type: 'video'
           });
         }
       });
 
       const audioFormats = videoInfo.formats.filter(f => 
-        f.vcodec === 'none' && f.acodec !== 'none' && (f.filesize || f.filesize_approx)
+        f.vcodec === 'none' && f.acodec !== 'none'
       );
+
       if (audioFormats.length > 0) {
         const bestAudio = audioFormats.sort((a, b) => (b.filesize || 0) - (a.filesize || 0))[0];
         availableFormats.push({
           id: bestAudio.format_id,
           label: `Audio Only (MP3)`,
-          size: formatBytes(bestAudio.filesize || bestAudio.filesize_approx),
+          size: formatBytes(bestAudio.filesize || bestAudio.filesize_approx || 0),
           type: 'audio'
         });
       }
@@ -76,6 +79,7 @@ exports.downloadMedia = (req, res) => {
     output: '-',
     noCheckCertificates: true,
     noWarnings: true,
+    // Uses the exact format ID chosen in the dropdown
     format: formatId || (isAudio ? 'bestaudio/best' : 'best')
   };
 
