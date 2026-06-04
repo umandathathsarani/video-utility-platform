@@ -22,6 +22,12 @@ export default function Home() {
     }
   };
 
+  const handleDownload = (type) => {
+    if (!url) return;
+    const downloadUrl = `http://localhost:5000/api/video/download?url=${encodeURIComponent(url)}&type=${type}`;
+    window.location.href = downloadUrl;
+  };
+
   return (
     <div className="home-container">
       <div className="hero-section">
@@ -32,7 +38,7 @@ export default function Home() {
       <form className="download-form" onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="Paste video URL here..."
+          placeholder="Paste media URL here..."
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           required
@@ -49,8 +55,18 @@ export default function Home() {
             <h3>{result.title}</h3>
             <p>Duration: {result.duration}</p>
             <div className="download-actions">
-              <button className="btn-primary">Download MP4</button>
-              <button className="btn-secondary">Download MP3</button>
+              <button 
+                className="btn-primary" 
+                onClick={() => handleDownload('mp4')}
+              >
+                Download MP4
+              </button>
+              <button 
+                className="btn-secondary" 
+                onClick={() => handleDownload('mp3')}
+              >
+                Download MP3
+              </button>
             </div>
           </div>
         </div>

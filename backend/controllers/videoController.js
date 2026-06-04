@@ -29,3 +29,37 @@ exports.getVideoDetails = async (req, res) => {
     res.status(500).json({ error: "Failed to extract video details" });
   }
 };
+
+exports.downloadMedia = (req, res) => {
+  const { url, type } = req.query;
+
+  if (!url) {
+    return res.status(400).send("URL is required");
+  }
+
+  const isAudio = type === 'mp3';
+  const options = {
+    output: '-',
+    noCheckCertificates: true,
+    noWarnings: true,
+    preferFreeFormats: true,
+    format: isAudio ? 'bestaudio/best' : 'best'
+  };
+
+  if (isAudio) {
+    options.extractAudio = true;
+    options.audioFormat = 'mp3';
+  }
+
+  res.setHeader('Content-Disposition', `attachment; filename="download.${isAudio ? 'mp3' : 'mp4'}"`);
+  res.setHeader('Content-Type', isAudio ? 'audio/mpeg' : 'video/mp4');
+
+  const subprocess = youtubedl.exec(url, options);
+  
+  subprocess.stdout.pipe(res);
+
+  subprocess.on('error', (error) => {
+    console.error(error.message);
+    if (!res.headersSent) res.status(500).send("Download failed");
+  });
+};
