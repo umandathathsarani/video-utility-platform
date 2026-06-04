@@ -8,4 +8,6 @@ router.get('/download', videoController.downloadMedia);
 
 router.post('/playlist', videoController.getPlaylistUrls);
 
+router.post('/basic-info', videoController.getBasicInfo);
+
 module.exports = router;

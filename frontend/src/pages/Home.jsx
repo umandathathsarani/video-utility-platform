@@ -19,10 +19,9 @@ export default function Home() {
     try {
       const data = await fetchPlaylistUrls(playlistUrl);
       setUrlsInput(data.urls.join('\n'));
-      alert(`Successfully extracted ${data.urls.length} videos from: ${data.title}`);
     } catch (error) {
       console.error(error);
-      alert("Failed to extract playlist. Make sure it is a valid, public playlist URL.");
+      alert("Failed to extract playlist.");
     } finally {
       setIsExtractingPlaylist(false);
     }
@@ -30,7 +29,6 @@ export default function Home() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     const urlArray = urlsInput.split('\n').map(u => u.trim()).filter(u => u);
     if (urlArray.length === 0) return;
     
@@ -38,27 +36,33 @@ export default function Home() {
     
     try {
       const fetchPromises = urlArray.map(async (url) => {
-        try {
-          const data = await fetchVideoDetails(url);
-          const defaultFormat = data.formats && data.formats.length > 0
-            ? JSON.stringify({ id: data.formats[0].id, type: data.formats[0].type })
-            : '';
-            
-          return { ...data, originalUrl: url, selectedFormat: defaultFormat, hasError: false };
-        } catch (error) {
-          return { originalUrl: url, hasError: true };
-        }
+        const response = await fetch('http://localhost:5000/api/video/basic-info', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        const data = await response.json();
+        return { ...data, originalUrl: url, formats: [], selectedFormat: '' };
       });
 
       const newResults = await Promise.all(fetchPromises);
-      const successfulResults = newResults.filter(r => !r.hasError);
-      setResults(prev => [...prev, ...successfulResults]);
+      setResults(prev => [...prev, ...newResults]);
       setUrlsInput('');
     } catch (error) {
-      alert("A critical error occurred while fetching the videos.");
+      alert("A critical error occurred.");
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const loadFormats = async (index) => {
+    if (results[index].formats.length > 0) return;
+
+    const data = await fetchVideoDetails(results[index].originalUrl);
+    const updated = [...results];
+    updated[index].formats = data.formats;
+    updated[index].selectedFormat = data.formats.length > 0 ? JSON.stringify({ id: data.formats[0].id, type: data.formats[0].type }) : '';
+    setResults(updated);
   };
 
   const handleFormatChange = (index, newFormat) => {
@@ -103,23 +107,12 @@ export default function Home() {
           required
         />
         
-        {}
         <div style={{ display: 'flex', gap: '1rem' }}>
-          <button 
-            type="submit" 
-            style={{ flex: 2 }} 
-            disabled={isProcessing || isExtractingPlaylist}
-          >
+          <button type="submit" style={{ flex: 2 }} disabled={isProcessing || isExtractingPlaylist}>
             {isProcessing ? 'Processing Batch...' : 'Fetch Videos'}
           </button>
           
-          <button 
-            type="button" 
-            className="btn-secondary" 
-            style={{ flex: 1, padding: '1rem', border: '1px solid #4f46e5', color: '#818cf8' }} 
-            onClick={handlePlaylistExtract} 
-            disabled={isProcessing || isExtractingPlaylist || !urlsInput}
-          >
+          <button type="button" className="btn-secondary" style={{ flex: 1, padding: '1rem', border: '1px solid #4f46e5', color: '#818cf8' }} onClick={handlePlaylistExtract} disabled={isProcessing || isExtractingPlaylist || !urlsInput}>
             {isExtractingPlaylist ? 'Extracting...' : 'Extract Playlist'}
           </button>
         </div>
@@ -130,12 +123,8 @@ export default function Home() {
           <div className="batch-actions">
             <h2>Ready to Download ({results.length})</h2>
             <div className="batch-buttons">
-              <button className="btn-primary" onClick={handleDownloadAll}>
-                Download All
-              </button>
-              <button className="btn-secondary" onClick={() => setResults([])}>
-                Clear List
-              </button>
+              <button className="btn-primary" onClick={handleDownloadAll}>Download All</button>
+              <button className="btn-secondary" onClick={() => setResults([])}>Clear List</button>
             </div>
           </div>
 
@@ -145,31 +134,30 @@ export default function Home() {
                 {video.thumbnail && <img src={video.thumbnail} alt="Thumbnail" className="thumbnail" />}
                 
                 <div className="result-info">
-                  <h3 title={video.title}>
-                    {video.title.length > 50 ? video.title.substring(0, 50) + "..." : video.title}
-                  </h3>
+                  <h3 title={video.title}>{video.title.length > 50 ? video.title.substring(0, 50) + "..." : video.title}</h3>
                   <p>Duration: {video.duration}</p>
                   
-                  {video.formats && video.formats.length > 0 ? (
-                    <div className="format-selection">
-                      <select 
-                        className="quality-select"
-                        value={video.selectedFormat} 
-                        onChange={(e) => handleFormatChange(index, e.target.value)}
-                      >
-                        {video.formats.map((format) => (
+                  <div className="format-selection">
+                    <select 
+                      className="quality-select"
+                      value={video.selectedFormat} 
+                      onClick={() => loadFormats(index)}
+                      onChange={(e) => handleFormatChange(index, e.target.value)}
+                    >
+                      {video.formats.length === 0 ? (
+                        <option>Click to load qualities...</option>
+                      ) : (
+                        video.formats.map((format) => (
                           <option key={format.id} value={JSON.stringify({ id: format.id, type: format.type })}>
                             {format.label} — {format.size}
                           </option>
-                        ))}
-                      </select>
-                      <button className="btn-primary" onClick={() => handleSingleDownload(video)}>
-                        Download File
-                      </button>
-                    </div>
-                  ) : (
-                     <p className="error-text">No direct download formats found.</p>
-                  )}
+                        ))
+                      )}
+                    </select>
+                    <button className="btn-primary" onClick={() => handleSingleDownload(video)}>
+                      Download File
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

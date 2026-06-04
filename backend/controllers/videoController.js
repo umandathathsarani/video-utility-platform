@@ -123,3 +123,22 @@ exports.getPlaylistUrls = async (req, res) => {
     res.status(500).json({ error: "Failed to extract playlist details" });
   }
 };
+
+exports.getBasicInfo = async (req, res) => {
+  const { url } = req.body;
+  try {
+    const info = await youtubedl(url, {
+      dumpSingleJson: true,
+      skipDownload: true,
+      noCheckCertificates: true,
+      noWarnings: true,
+    });
+    res.json({
+      title: info.title,
+      thumbnail: info.thumbnail,
+      duration: new Date(info.duration * 1000).toISOString().slice(11, 19),
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Could not fetch video info" });
+  }
+};
