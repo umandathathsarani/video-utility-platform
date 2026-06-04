@@ -26,7 +26,7 @@ export default function Home() {
     <div className="home-container">
       <div className="hero-section">
         <h1>Video Downloader</h1>
-        <p>Enter a media URL to extract download links and formats.</p>
+        <p>Supports YouTube, Instagram, Facebook, TikTok, X, and more.</p>
       </div>
       
       <form className="download-form" onSubmit={handleSubmit}>
