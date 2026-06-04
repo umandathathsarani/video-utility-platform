@@ -2,9 +2,7 @@ const youtubedl = require('youtube-dl-exec');
 
 exports.getVideoDetails = async (req, res) => {
   const { url } = req.body;
-  if (!url) {
-    return res.status(400).json({ error: "URL is required" });
-  }
+  if (!url) return res.status(400).json({ error: "URL is required" });
 
   try {
     const videoInfo = await youtubedl(url, {
@@ -25,17 +23,14 @@ exports.getVideoDetails = async (req, res) => {
       duration: formatDuration(videoInfo.duration)
     });
   } catch (error) {
-    console.error(error.message);
+    console.error("Extraction Error:", error.message);
     res.status(500).json({ error: "Failed to extract video details" });
   }
 };
 
 exports.downloadMedia = (req, res) => {
   const { url, type } = req.query;
-
-  if (!url) {
-    return res.status(400).send("URL is required");
-  }
+  if (!url) return res.status(400).send("URL is required");
 
   const isAudio = type === 'mp3';
   const options = {
@@ -59,7 +54,7 @@ exports.downloadMedia = (req, res) => {
   subprocess.stdout.pipe(res);
 
   subprocess.on('error', (error) => {
-    console.error(error.message);
+    console.error("Download Error:", error.message);
     if (!res.headersSent) res.status(500).send("Download failed");
   });
 };

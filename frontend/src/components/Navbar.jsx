@@ -15,16 +15,6 @@ export default function Navbar() {
             Downloader
           </Link>
         </li>
-        <li>
-          <Link to="/history" className={location.pathname === '/history' ? 'active' : ''}>
-            History
-          </Link>
-        </li>
-        <li>
-          <Link to="/metadata" className={location.pathname === '/metadata' ? 'active' : ''}>
-            Metadata
-          </Link>
-        </li>
       </ul>
     </nav>
   );

@@ -1,22 +1,24 @@
-import { Routes, Route } from 'react-router-dom';
-import Navbar from './components/Navbar';
+import { Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
-import History from './pages/History';
-import Metadata from './pages/Metadata';
-import NotFound from './pages/NotFound';
+import './App.css'; 
 
-export default function App() {
+function App() {
   return (
     <div className="app-container">
-      <Navbar />
+      <nav className="navbar">
+        <h2>VideoUtil</h2>
+        <div className="nav-links">
+          <Link to="/">Downloader</Link>
+        </div>
+      </nav>
+      
       <main className="main-content">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/metadata" element={<Metadata />} />
-          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
     </div>
   );
 }
+
+export default App;

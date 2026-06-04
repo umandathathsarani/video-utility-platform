@@ -17,6 +17,7 @@ export default function Home() {
       setResult(data);
     } catch (error) {
       console.error(error);
+      alert("Failed to fetch video. Please check the URL and try again.");
     } finally {
       setIsProcessing(false);
     }
@@ -24,6 +25,7 @@ export default function Home() {
 
   const handleDownload = (type) => {
     if (!url) return;
+    // Direct the browser to the backend download route to trigger a file save
     const downloadUrl = `http://localhost:5000/api/video/download?url=${encodeURIComponent(url)}&type=${type}`;
     window.location.href = downloadUrl;
   };
@@ -50,7 +52,9 @@ export default function Home() {
 
       {result && (
         <div className="result-card">
-          <img src={result.thumbnail} alt="Thumbnail" className="thumbnail" />
+          {/* We use a conditional check here just in case a platform (like IG) blocks the thumbnail */}
+          {result.thumbnail && <img src={result.thumbnail} alt="Thumbnail" className="thumbnail" />}
+          
           <div className="result-info">
             <h3>{result.title}</h3>
             <p>Duration: {result.duration}</p>
