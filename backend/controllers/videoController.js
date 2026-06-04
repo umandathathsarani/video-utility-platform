@@ -11,11 +11,11 @@ exports.getVideoDetails = async (req, res) => {
       dumpSingleJson: true,
       noCheckCertificates: true,
       noWarnings: true,
-      preferFreeFormats: true,
-      addHeader: ['referer:youtube.com', 'user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36']
+      preferFreeFormats: true
     });
 
     const formatDuration = (seconds) => {
+      if (!seconds) return "N/A";
       return new Date(seconds * 1000).toISOString().slice(11, 19);
     };
 
@@ -25,7 +25,7 @@ exports.getVideoDetails = async (req, res) => {
       duration: formatDuration(videoInfo.duration)
     });
   } catch (error) {
-    console.error(error);
+    console.error(error.message);
     res.status(500).json({ error: "Failed to extract video details" });
   }
 };
