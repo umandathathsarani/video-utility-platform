@@ -1,11 +1,20 @@
 export const fetchVideoDetails = async (url) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        title: "Sample Video Title - Backend Integration Pending",
-        thumbnail: "https://via.placeholder.com/800x450/1a1a1a/ffffff?text=Video+Thumbnail",
-        duration: "10:24"
-      });
-    }, 1500);
-  });
+  try {
+    const response = await fetch('http://localhost:5000/api/video/extract', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ url }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch video details from server');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("API Error:", error);
+    throw error;
+  }
 };
