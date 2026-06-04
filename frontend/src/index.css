@@ -1,0 +1,10 @@
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: #0f0f0f;
+  color: #ffffff;
+}
+
+.main-content {
+  padding: 2rem;
+}
